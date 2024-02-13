@@ -1,14 +1,17 @@
 #![no_std]
 #![no_main]
-
-mod vga_buffer;
+// #![feature(custom_test_frameworks)]
+// #![test_runner(rm_os::test_runner)]
+// #![reexport_test_harness_main = "test_main"]
 
 use core::panic::PanicInfo;
+use rm_os::prelude::*;
 
 #[no_mangle] // Don't add garbage to the function name, leave it as what it is.
 pub extern "C" fn _start() -> ! {
     // This function is the entry point for rm_os, because the linker looks for a function named `_start`
-    println!("hello world");
+    print!("hello world");
+
     loop {}
 }
 
