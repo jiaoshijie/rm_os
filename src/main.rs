@@ -10,7 +10,12 @@ use rm_os::prelude::*;
 #[no_mangle] // Don't add garbage to the function name, leave it as what it is.
 pub extern "C" fn _start() -> ! {
     // This function is the entry point for rm_os, because the linker looks for a function named `_start`
-    print!("hello world");
+    println!("Hello World{}", '!');
+
+    rm_os::init();
+    x86_64::instructions::interrupts::int3();
+
+    print!("It didn't crash, anymore{}", "!!!");
 
     loop {}
 }

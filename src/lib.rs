@@ -1,4 +1,5 @@
 #![no_std]
+#![feature(abi_x86_interrupt)]
 // #![cfg_attr(test, no_main)]
 // #![feature(custom_test_frameworks)]
 // #![test_runner(crate::test_runner)]
@@ -7,6 +8,11 @@
 
 pub mod vga_buf;
 pub mod serial;
+pub mod interrupts;
+
+pub fn init() {
+    interrupts::init_idt();
+}
 
 pub mod prelude {
     pub use crate::{println, print};
