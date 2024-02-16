@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bootloader = "0.9.24"  # can't use latest version, must use 0.9 version
+bootloader = "0.9.26"  # can't use latest version, must use 0.9 version
 volatile = "0.2.6"
 lazy_static = { version = "1.0", features = ["spin_no_std"] }
 spin = "0.5.2"
@@ -21,6 +21,12 @@ test-args = [
 ]
 test-success-exit-code = 33  # (0x10 << 1) | 1
 test-timeout = 300  # in seconds
+
+[[test]]
+name = "stack_overflow"
+# `harness` flag is false will disable default test runner and custom test runner, treated the test link a normal executable.
+harness = false  # Because kernel stack overflow should occur double fault handler, which we can't continue execution after that.
+
 
 # NOTE: Don't need to specify the panic behavior here, because it has been specified in `./x86_64-rm_os.json`
 # [profile.dev]

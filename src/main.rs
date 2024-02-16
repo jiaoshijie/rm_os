@@ -8,14 +8,19 @@ use core::panic::PanicInfo;
 use rm_os::prelude::*;
 
 #[no_mangle] // Don't add garbage to the function name, leave it as what it is.
+// NOTE: This function is the entry point for rm_os, because the linker looks for a function named `_start`
 pub extern "C" fn _start() -> ! {
-    // This function is the entry point for rm_os, because the linker looks for a function named `_start`
+    rm_os::init();
+
     println!("Hello World{}", '!');
 
-    rm_os::init();
-    x86_64::instructions::interrupts::int3();
+    // NOTE: issue a `int3` interrupt
+    // x86_64::instructions::interrupts::int3();
 
-    print!("It didn't crash, anymore{}", "!!!");
+    // NOTE: occur double fault error
+    // unsafe {
+    //     *(0xdeadbeef as *mut u8) = 42;
+    // }
 
     loop {}
 }

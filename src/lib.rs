@@ -9,8 +9,10 @@
 pub mod vga_buf;
 pub mod serial;
 pub mod interrupts;
+pub mod gdt;
 
 pub fn init() {
+    gdt::init();
     interrupts::init_idt();
 }
 
