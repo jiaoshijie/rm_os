@@ -5,8 +5,8 @@
 #![reexport_test_harness_main = "test_main"]
 
 use core::panic::PanicInfo;
-use rm_os::test_prelude::*;
 use rm_os::serial_println;
+use rm_os::test_prelude::*;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {

@@ -6,12 +6,14 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bootloader = "0.9.26"  # can't use latest version, must use 0.9 version
+bootloader = "0.9"  # can't use latest version, must use 0.9 version
 volatile = "0.2.6"
 lazy_static = { version = "1.0", features = ["spin_no_std"] }
 spin = "0.5.2"
 x86_64 = "0.14.2"
 uart_16550 = "0.2.0"
+pic8259 = "0.10.1"
+pc-keyboard = "0.5.0"
 
 [package.metadata.bootimage]
 test-args = [

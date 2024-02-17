@@ -5,24 +5,31 @@
 // #![test_runner(crate::test_runner)]
 // #![reexport_test_harness_main = "test_main"]
 
-
-pub mod vga_buf;
-pub mod serial;
-pub mod interrupts;
 pub mod gdt;
+pub mod interrupts;
+pub mod serial;
+pub mod vga_buf;
 
 pub fn init() {
-    gdt::init();
-    interrupts::init_idt();
+    gdt::init(); // NOTE: For now it for switch stack when double fault occurs.
+    interrupts::init_idt(); // Config the interrupt handler function
+    unsafe { interrupts::PICS.lock().initialize() }; // Config external interrupt numbers.
+    x86_64::instructions::interrupts::enable(); // Enable external interrupts.
+}
+
+pub fn hlt_loop() -> ! {
+    loop {
+        x86_64::instructions::hlt();
+    }
 }
 
 pub mod prelude {
-    pub use crate::{println, print};
+    pub use crate::{print, println};
 }
 
 pub mod test_prelude {
-    use core::panic::PanicInfo;
     use crate::*;
+    use core::panic::PanicInfo;
 
     // Quit qemu
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -56,7 +63,7 @@ pub mod test_prelude {
         serial_println!("\x1b[31m[Failed]\x1b[0m");
         serial_println!("Error: {}", info);
         exit_qemu(QemuExitCode::Failed);
-        loop {}
+        hlt_loop();
     }
 
     pub fn test_runner(tests: &[&dyn Testable]) {
