@@ -17,10 +17,9 @@ pub extern "C" fn _start() -> ! {
     // NOTE: issue a `int3` interrupt
     // x86_64::instructions::interrupts::int3();
 
-    // NOTE: occur double fault error
-    // unsafe {
-    //     *(0xdeadbeef as *mut u8) = 42;
-    // }
+    use x86_64::registers::control::Cr3;
+    let (level_4_page_table, _) = Cr3::read();
+    println!("Level 4 page table physical address: {:?}", level_4_page_table.start_address());
 
     // NOTE: Cheers
     println!("Cheers, It didn't crash!!!");

@@ -3,7 +3,7 @@ use crate::{gdt, println};
 use lazy_static::lazy_static;
 use pic8259::ChainedPics;
 use spin;
-use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
+use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode};
 
 lazy_static! {
     static ref IDT: InterruptDescriptorTable = {
@@ -14,6 +14,7 @@ lazy_static! {
                 .set_handler_fn(double_fault_handler)
                 .set_stack_index(gdt::DOUBLE_FAULT_IST_INDEX);
         }
+        idt.page_fault.set_handler_fn(page_fault_handler);
         idt[ExternalInterruptIndex::Timer.into()].set_handler_fn(timer_interrupt_handler);
         idt[ExternalInterruptIndex::Keyboard.into()].set_handler_fn(keyboard_interrupt_handler);
         idt
@@ -75,6 +76,17 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: InterruptStac
         PICS.lock()
             .notify_end_of_interrupt(ExternalInterruptIndex::Keyboard.into());
     }
+}
+
+extern "x86-interrupt" fn page_fault_handler(stack_frame: InterruptStackFrame, error_code: PageFaultErrorCode) {
+    use x86_64::registers::control::Cr2;
+    use crate::hlt_loop;
+
+    println!("EXCEPTION: PAGE FAULT");
+    println!("Accessed Address: {:?}", Cr2::read());
+    println!("Error Code: {:?}", error_code);
+    println!("{:#?}", stack_frame);
+    hlt_loop();  // TODO: Why is this fucntion used in here?
 }
 
 pub const PIC_1_OFFSET: u8 = 32;
