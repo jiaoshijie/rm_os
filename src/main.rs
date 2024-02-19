@@ -4,25 +4,29 @@
 // #![test_runner(rm_os::test_runner)]
 // #![reexport_test_harness_main = "test_main"]
 
+use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
 use rm_os::prelude::*;
 
-#[no_mangle] // Don't add garbage to the function name, leave it as what it is.
-             // NOTE: This function is the entry point for rm_os, because the linker looks for a function named `_start`
-pub extern "C" fn _start() -> ! {
-    println!("Hello World{}", '!');
+entry_point!(kernal_main);
 
+fn kernal_main(boot_info: &'static BootInfo) -> ! {
     rm_os::init();
 
-    // NOTE: issue a `int3` interrupt
-    // x86_64::instructions::interrupts::int3();
+    use rm_os::memory;
+    use x86_64::{structures::paging::Page, VirtAddr};
 
-    use x86_64::registers::control::Cr3;
-    let (level_4_page_table, _) = Cr3::read();
-    println!("Level 4 page table physical address: {:?}", level_4_page_table.start_address());
+    let physcial_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
+    let mut mapper = unsafe { memory::init(physcial_mem_offset) };
+    let mut frame_allocator = unsafe { memory::BootInfoFrameAllocator::init(&boot_info.memory_map) };
+    // println!("{:?}", boot_info.memory_map);
 
-    // NOTE: Cheers
-    println!("Cheers, It didn't crash!!!");
+    let page = Page::containing_address(VirtAddr::new(0xdeadbeaf000));
+    memory::create_example_mapping(page, &mut mapper, &mut frame_allocator);
+
+    let page_ptr: *mut u64 = page.start_address().as_mut_ptr();
+    unsafe { page_ptr.offset(400).write_volatile(0x_f021_f077_f065_f04e) };
+
     rm_os::hlt_loop();
 }
 

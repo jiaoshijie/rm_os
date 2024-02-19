@@ -78,15 +78,18 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: InterruptStac
     }
 }
 
-extern "x86-interrupt" fn page_fault_handler(stack_frame: InterruptStackFrame, error_code: PageFaultErrorCode) {
-    use x86_64::registers::control::Cr2;
+extern "x86-interrupt" fn page_fault_handler(
+    stack_frame: InterruptStackFrame,
+    error_code: PageFaultErrorCode,
+) {
     use crate::hlt_loop;
+    use x86_64::registers::control::Cr2;
 
     println!("EXCEPTION: PAGE FAULT");
     println!("Accessed Address: {:?}", Cr2::read());
     println!("Error Code: {:?}", error_code);
     println!("{:#?}", stack_frame);
-    hlt_loop();  // TODO: Why is this fucntion used in here?
+    hlt_loop(); // TODO: Why is this fucntion used in here?
 }
 
 pub const PIC_1_OFFSET: u8 = 32;
