@@ -4,29 +4,44 @@
 // #![test_runner(rm_os::test_runner)]
 // #![reexport_test_harness_main = "test_main"]
 
+extern crate alloc;
+
 use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
 use rm_os::prelude::*;
+use alloc::{boxed::Box, vec::Vec};
 
 entry_point!(kernal_main);
 
 fn kernal_main(boot_info: &'static BootInfo) -> ! {
     rm_os::init();
 
-    use rm_os::memory;
-    use x86_64::{structures::paging::Page, VirtAddr};
+    use rm_os::allocator;
+    use rm_os::memory::{self, BootInfoFrameAllocator};
+    use x86_64::VirtAddr;
 
-    let physcial_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
-    let mut mapper = unsafe { memory::init(physcial_mem_offset) };
-    let mut frame_allocator = unsafe { memory::BootInfoFrameAllocator::init(&boot_info.memory_map) };
-    // println!("{:?}", boot_info.memory_map);
+    let physical_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
+    let mut mapper = unsafe {
+        memory::init(physical_mem_offset)
+    };
 
-    let page = Page::containing_address(VirtAddr::new(0xdeadbeaf000));
-    memory::create_example_mapping(page, &mut mapper, &mut frame_allocator);
+    let mut frame_allocator = unsafe {
+        BootInfoFrameAllocator::init(&boot_info.memory_map)
+    };
 
-    let page_ptr: *mut u64 = page.start_address().as_mut_ptr();
-    unsafe { page_ptr.offset(400).write_volatile(0x_f021_f077_f065_f04e) };
+    allocator::init_heap(&mut mapper, &mut frame_allocator)
+        .expect("heap initialization failed!!!");
 
+    let x = Box::new(10);
+    println!("{:p}", x);
+
+    let mut v = Vec::new();
+    for i in 0..250 {
+        v.push(i);
+    }
+    println!("{:p}", v.as_slice());
+
+    println!("It did not crash!!!");
     rm_os::hlt_loop();
 }
 

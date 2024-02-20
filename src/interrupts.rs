@@ -2,7 +2,6 @@ use crate::prelude::*;
 use crate::{gdt, println};
 use lazy_static::lazy_static;
 use pic8259::ChainedPics;
-use spin;
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame, PageFaultErrorCode};
 
 lazy_static! {

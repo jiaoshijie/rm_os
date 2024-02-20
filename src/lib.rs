@@ -5,11 +5,14 @@
 // #![test_runner(crate::test_runner)]
 // #![reexport_test_harness_main = "test_main"]
 
+extern crate alloc;
+
 pub mod gdt;
 pub mod interrupts;
 pub mod memory;
 pub mod serial;
 pub mod vga_buf;
+pub mod allocator;
 
 pub fn init() {
     gdt::init(); // NOTE: For now it for switch stack when double fault occurs.
