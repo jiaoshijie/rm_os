@@ -9,6 +9,7 @@ use x86_64::{
 // use linked_list_allocator::LockedHeap;
 
 pub mod bump;
+pub mod linked_list;
 
 pub struct Locked<A> {
     inner: spin::Mutex<A>,
@@ -40,11 +41,12 @@ pub fn align_up(addr: usize, align: usize) -> usize {
     (addr + align - 1) & !(align - 1)
 }
 
-
 #[global_allocator]
 // static ALLOCATOR: DummyAlloc = DummyAlloc;  // NOTE: only return null ptr
 // static ALLOCATOR: LockedHeap = LockedHeap::empty();  // NOTE: external crate
-static ALLOCATOR: Locked<bump::BumpAllocator> = Locked::new(bump::BumpAllocator::new());
+// static ALLOCATOR: Locked<bump::BumpAllocator> = Locked::new(bump::BumpAllocator::new());
+static ALLOCATOR: Locked<linked_list::LinkedListAllocator> =
+    Locked::new(linked_list::LinkedListAllocator::new());
 
 pub const HEAP_START: usize = 0x_4444_4444_0000;
 pub const HEAP_SIZE: usize = 100 * 1024; // 100 KiB
@@ -73,11 +75,11 @@ pub fn init_heap(
     };
 
     for page in page_range {
-        let frame = frame_allocator.allocate_frame().ok_or(MapToError::FrameAllocationFailed)?;
+        let frame = frame_allocator
+            .allocate_frame()
+            .ok_or(MapToError::FrameAllocationFailed)?;
         let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
-        unsafe {
-            mapper.map_to(page, frame, flags, frame_allocator)?.flush()
-        };
+        unsafe { mapper.map_to(page, frame, flags, frame_allocator)?.flush() };
     }
 
     unsafe {

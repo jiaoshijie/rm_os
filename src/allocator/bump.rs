@@ -1,5 +1,5 @@
+use super::{align_up, Locked};
 use alloc::alloc::{GlobalAlloc, Layout};
-use super::{Locked, align_up};
 use core::ptr;
 
 /*
@@ -52,13 +52,14 @@ unsafe impl GlobalAlloc for Locked<BumpAllocator> {
         };
 
         if addr_end > bump.heap_end {
-            ptr::null_mut()  // out of heap memory
+            ptr::null_mut() // out of heap memory
         } else {
             bump.next = addr_end;
             bump.allocations += 1;
             addr_start as *mut u8
         }
     }
+
     unsafe fn dealloc(&self, _ptr: *mut u8, _layout: Layout) {
         let mut bump = self.lock();
 
