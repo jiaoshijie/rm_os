@@ -115,6 +115,7 @@ impl LinkedListAllocator {
 
 unsafe impl GlobalAlloc for Locked<LinkedListAllocator> {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+        // crate::println!("{:?}", layout);
         let (size, align) = LinkedListAllocator::size_align(layout);
 
         let mut allocator = self.lock();

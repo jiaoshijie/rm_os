@@ -10,6 +10,11 @@ use x86_64::{
 
 pub mod bump;
 pub mod linked_list;
+pub mod fixed_size_block;
+
+// TODO
+// pub mod slab;
+// pub mod buddy;
 
 pub struct Locked<A> {
     inner: spin::Mutex<A>,
@@ -45,8 +50,10 @@ pub fn align_up(addr: usize, align: usize) -> usize {
 // static ALLOCATOR: DummyAlloc = DummyAlloc;  // NOTE: only return null ptr
 // static ALLOCATOR: LockedHeap = LockedHeap::empty();  // NOTE: external crate
 // static ALLOCATOR: Locked<bump::BumpAllocator> = Locked::new(bump::BumpAllocator::new());
-static ALLOCATOR: Locked<linked_list::LinkedListAllocator> =
-    Locked::new(linked_list::LinkedListAllocator::new());
+// static ALLOCATOR: Locked<linked_list::LinkedListAllocator> =
+//     Locked::new(linked_list::LinkedListAllocator::new());
+static ALLOCATOR: Locked<fixed_size_block::FixedSizeBlockAllocator> =
+    Locked::new(fixed_size_block::FixedSizeBlockAllocator::new());
 
 pub const HEAP_START: usize = 0x_4444_4444_0000;
 pub const HEAP_SIZE: usize = 100 * 1024; // 100 KiB
