@@ -6,38 +6,54 @@
 
 extern crate alloc;
 
-use alloc::{boxed::Box, vec::Vec};
 use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
 use rm_os::prelude::*;
+use rm_os::allocator;
+use rm_os::memory::{self, BootInfoFrameAllocator};
+use x86_64::VirtAddr;
+
 
 entry_point!(kernal_main);
 
 fn kernal_main(boot_info: &'static BootInfo) -> ! {
+    // Setup basic things
     rm_os::init();
 
-    use rm_os::allocator;
-    use rm_os::memory::{self, BootInfoFrameAllocator};
-    use x86_64::VirtAddr;
-
+    // Initialize the heap for kernal
     let physical_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
     let mut mapper = unsafe { memory::init(physical_mem_offset) };
-
     let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
-
     allocator::init_heap(&mut mapper, &mut frame_allocator).expect("heap initialization failed!!!");
 
-    let x = Box::new(10);
-    println!("{:p}", x);
+    use rm_os::task::{Task, simple_executor::SimpleExecutor};
 
-    let mut v = Vec::new();
-    for i in 0..250 {
-        v.push(i);
-    }
-    println!("{:p}", v.as_slice());
+    let mut simple_executor = SimpleExecutor::new();
+    simple_executor.spawn(Task::new(example_task_1()));
+    simple_executor.spawn(Task::new(example_task_2()));
+    simple_executor.run();
+
 
     println!("It did not crash!!!");
     rm_os::hlt_loop();
+}
+
+async fn async_number_42() -> usize {
+    42
+}
+
+async fn async_number_43() -> usize {
+    43
+}
+
+async fn example_task_1() {
+    let number = async_number_42().await;
+    println!("{}", number);
+}
+
+async fn example_task_2() {
+    let number = async_number_43().await;
+    println!("{}", number);
 }
 
 // This function will be called when a panic occurs.
