@@ -14,6 +14,7 @@ pub mod interrupts;
 pub mod memory;
 pub mod serial;
 pub mod vga_buf;
+pub mod task;
 
 pub fn init() {
     gdt::init(); // NOTE: For now it for switch stack when double fault occurs.
