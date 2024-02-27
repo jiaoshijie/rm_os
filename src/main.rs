@@ -26,16 +26,13 @@ fn kernal_main(boot_info: &'static BootInfo) -> ! {
     let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
     allocator::init_heap(&mut mapper, &mut frame_allocator).expect("heap initialization failed!!!");
 
-    use rm_os::task::{Task, simple_executor::SimpleExecutor};
+    use rm_os::task::{Task, executor::Executor, keyboard::print_keypresses};
 
-    let mut simple_executor = SimpleExecutor::new();
-    simple_executor.spawn(Task::new(example_task_1()));
-    simple_executor.spawn(Task::new(example_task_2()));
-    simple_executor.run();
-
-
-    println!("It did not crash!!!");
-    rm_os::hlt_loop();
+    let mut executor = Executor::new();
+    executor.spawn(Task::new(print_keypresses()));
+    executor.spawn(Task::new(example_task_1()));
+    executor.spawn(Task::new(example_task_2()));
+    executor.run();
 }
 
 async fn async_number_42() -> usize {
